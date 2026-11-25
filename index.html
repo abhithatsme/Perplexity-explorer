@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perplexity Explorer | Interactive NLP Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================================================
+       DISTINCT INDUSTRIAL SLATE-GREY THEME
+       Visible cool stone grey background with subtle grid, elevated slate cards
+       ========================================================================== */
+    :root {
+      --bg-canvas: #d6dbe3;
+      --bg-card: #ffffff;
+      --bg-panel: #edf1f6;
+      --bg-inset: #e2e7ef;
+      --bg-hover: #d8dfec;
+      
+      --border-outer: #bcc5d3;
+      --border-inner: #d0d7e2;
+      --border-focus: #2563eb;
+      
+      --text-main: #0f172a;
+      --text-sub: #334155;
+      --text-muted: #64748b;
+      
+      --accent-primary: #1e293b;
+      --accent-blue: #2563eb;
+      --accent-blue-soft: #dbeafe;
+      --accent-emerald: #059669;
+      --accent-emerald-soft: #d1fae5;
+      --accent-amber: #d97706;
+      --accent-amber-soft: #fef3c7;
+      --accent-rose: #e11d48;
+      --accent-rose-soft: #ffe4e6;
+      
+      --shadow-soft: 0 4px 18px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-hover: 0 8px 28px rgba(15, 23, 42, 0.12);
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-pill: 9999px;
+      
+      --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      background-image: 
+        radial-gradient(rgba(100, 116, 139, 0.28) 1.2px, transparent 1.2px),
+        linear-gradient(180deg, #d2d8e1 0%, #dbe0e8 100%);
+      background-size: 22px 22px, 100% 100%;
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.55;
+      min-height: 100vh;
+      padding: 30px 16px 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-shell {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* Top Navigation */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(14px);
+      border: 1.5px solid var(--border-outer);
+      border-radius: var(--radius-lg);
+      padding: 12px 20px;
+      box-shadow: var(--shadow-soft);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-glyph {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .brand-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .brand-title strong {
+      color: var(--accent-blue);
+    }
+
+    .brand-sub {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .nav-pills {
+      display: flex;
+      background-color: var(--bg-inset);
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      gap: 4px;
+      border: 1px solid var(--border-inner);
+    }
+
+    .nav-tab {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      padding: 7px 16px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .nav-tab:hover {
+      color: var(--text-main);
+    }
+
+    .nav-tab.active {
+      background-color: #ffffff;
+      color: var(--text-main);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-outer);
+      border-radius: var(--radius-pill);
+      color: var(--text-sub);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-emerald);
+      box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.25);
+    }
+
+    /* Hero Strip */
+    .hero-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 6px 4px;
+    }
+
+    .hero-title-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-sub);
+      background-color: #e6ebf2;
+      border: 1px solid var(--border-outer);
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      margin-bottom: 8px;
+    }
+
+    .hero-headline {
+      font-size: 2.15rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--text-main);
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+
+    .hero-headline span {
+      color: var(--accent-blue);
+      text-decoration: underline;
+      text-decoration-color: rgba(37, 99, 235, 0.35);
+      text-underline-offset: 4px;
+    }
+
+    .hero-desc {
+      font-size: 0.98rem;
+      color: var(--text-sub);
+      max-width: 550px;
+    }
+
+    .hero-gauge-card {
+      background: #ffffff;
+      border: 1.5px solid var(--border-outer);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: var(--shadow-soft);
+      min-width: 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .gauge-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .gauge-val-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .gauge-number {
+      font-family: var(--font-mono);
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.03em;
+    }
+
+    .pill-tag {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+    }
+
+    .pill-tag.green {
+      background-color: var(--accent-emerald-soft);
+      color: var(--accent-emerald);
+      border: 1px solid #a7f3d0;
+    }
+
+    .pill-tag.amber {
+      background-color: var(--accent-amber-soft);
+      color: var(--accent-amber);
+      border: 1px solid #fde68a;
+    }
+
+    .pill-tag.rose {
+      background-color: var(--accent-rose-soft);
+      color: var(--accent-rose);
+      border: 1px solid #fecdd3;
+    }
+
+    .gauge-subtext {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      border-top: 1px solid var(--border-inner);
+      padding-top: 8px;
+    }
+
+    /* Cards */
+    .tab-panel {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .tab-panel.active {
+      display: flex;
+    }
+
+    .slate-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-outer);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .slate-card:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    .card-header-flex {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .card-header-flex.between {
+      justify-content: space-between;
+    }
+
+    .num-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-inset);
+      border: 1px solid var(--border-outer);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .card-heading h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .card-heading p {
+      font-size: 0.88rem;
+      color: var(--text-sub);
+    }
+
+    /* Input Strip */
+    .sentence-control {
+      display: flex;
+      gap: 10px;
+    }
+
+    .steel-input {
+      flex: 1;
+      padding: 12px 18px;
+      font-size: 1.05rem;
+      font-family: inherit;
+      color: var(--text-main);
+      background: #ffffff;
+      border: 1.5px solid var(--border-outer);
+      border-radius: var(--radius-md);
+      outline: none;
+      transition: all 0.15s;
+    }
+
+    .steel-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+    }
+
+    .btn-dark {
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 0 22px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      transition: all 0.15s ease;
+    }
+
+    .btn-dark:hover {
+      background: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    .bench-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .bench-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .chip-bench {
+      background: var(--bg-inset);
+      border: 1px solid var(--border-inner);
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chip-bench:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-outer);
+    }
+
+    .chip-bench.active {
+      background: #ffffff;
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+      font-weight: 700;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Token Visual Distribution Cards */
+    .token-grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .token-card {
+      background: var(--bg-panel);
+      border: 1.5px solid var(--border-inner);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .token-card:hover {
+      background: #ffffff;
+      border-color: var(--border-outer);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+
+    .tc-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .tc-word {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .tc-idx {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    .tc-stats {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      font-size: 0.85rem;
+    }
+
+    .tc-prob {
+      font-weight: 700;
+    }
+
+    .tc-prob.green { color: var(--accent-emerald); }
+    .tc-prob.amber { color: var(--accent-amber); }
+    .tc-prob.rose { color: var(--accent-rose); }
+
+    .tc-surprise {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .tc-bar-track {
+      height: 6px;
+      background: #cbd5e1;
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+
+    .tc-bar-fill {
+      height: 100%;
+      border-radius: var(--radius-pill);
+      transition: width 0.35s ease;
+    }
+
+    .tc-bar-fill.green { background: var(--accent-emerald); }
+    .tc-bar-fill.amber { background: var(--accent-amber); }
+    .tc-bar-fill.rose { background: var(--accent-rose); }
+
+    /* Data Table */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border-inner);
+      border-radius: var(--radius-md);
+      background: #ffffff;
+    }
+
+    .slate-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+
+    .slate-table th, .slate-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-inner);
+    }
+
+    .slate-table th {
+      background: var(--bg-panel);
+      font-weight: 700;
+      color: var(--text-sub);
+      font-size: 0.8rem;
+    }
+
+    .slate-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Math Steps Grid */
+    .steps-3-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .step-box {
+      background: var(--bg-panel);
+      border: 1.5px solid var(--border-inner);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .step-box.primary {
+      background: #ffffff;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 1px var(--accent-blue);
+    }
+
+    .step-label-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+
+    .step-box-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .step-code-result {
+      background: #ffffff;
+      border: 1px solid var(--border-inner);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-main);
+      word-break: break-all;
+    }
+
+    .ppl-bold {
+      color: var(--accent-blue);
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .step-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+    }
+
+    /* Formula Banner */
+    .formula-black-banner {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      text-align: center;
+      border: 1px solid #334155;
+    }
+
+    .toggle-group {
+      display: flex;
+      background: var(--bg-inset);
+      padding: 3px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-inner);
+    }
+
+    .btn-toggle {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+
+    .btn-toggle.active {
+      background: #ffffff;
+      color: var(--text-main);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .copy-latex-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-slate-outline {
+      background: #ffffff;
+      border: 1px solid var(--border-outer);
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.84rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .btn-slate-outline:hover {
+      background: var(--bg-inset);
+    }
+
+    .feedback-text {
+      font-size: 0.82rem;
+      color: var(--accent-emerald);
+      font-weight: 700;
+    }
+
+    /* Sandbox Rows */
+    .sandbox-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 100px 90px;
+      align-items: center;
+      gap: 14px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-inner);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+    }
+
+    .sb-token {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 7px 10px;
+      border: 1px solid var(--border-inner);
+      border-radius: var(--radius-sm);
+      outline: none;
+      background: #ffffff;
+    }
+
+    .slider-box {
+      display: flex;
+      align-items: center;
+    }
+
+    .slider-box input[type="range"] {
+      width: 100%;
+      accent-color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .sb-prob {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.92rem;
+      padding: 7px 8px;
+      border: 1px solid var(--border-inner);
+      border-radius: var(--radius-sm);
+      text-align: right;
+      outline: none;
+      background: #ffffff;
+    }
+
+    .btn-remove {
+      background: #ffffff;
+      border: 1px solid var(--border-outer);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-remove:hover {
+      background: var(--accent-rose-soft);
+      border-color: #fecdd3;
+      color: var(--accent-rose);
+    }
+
+    .dash-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .dash-metric-box {
+      background: var(--bg-panel);
+      border: 1.5px solid var(--border-inner);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+    }
+
+    .dash-metric-box.active {
+      background: #ffffff;
+      border-color: var(--border-focus);
+    }
+
+    .dm-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .dm-val {
+      font-family: var(--font-mono);
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-top: 2px;
+    }
+
+    .dm-val.blue {
+      color: var(--accent-blue);
+    }
+
+    /* Clean Blue Calculation Card */
+    .calc-blue-card {
+      background: #f0f7ff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.94rem;
+    }
+
+    .calc-line strong {
+      color: var(--accent-blue);
+    }
+
+    .calc-verdict {
+      margin-top: 6px;
+      padding-top: 10px;
+      border-top: 1px solid #dbeafe;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Comparison Grid */
+    .compare-container {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .compare-vs {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      background: var(--bg-inset);
+      border: 1px solid var(--border-outer);
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+    }
+
+    .compare-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .compare-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+
+    .compare-score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-inner);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+    }
+
+    .comp-score {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+
+    .takeaway-card {
+      background: var(--bg-panel);
+      border: 1.5px solid var(--border-inner);
+      border-radius: var(--radius-md);
+      padding: 18px;
+    }
+
+    .takeaway-card h4 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .takeaway-card p {
+      font-size: 0.88rem;
+      color: var(--text-sub);
+    }
+
+    /* Footer */
+    .app-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      padding: 12px 6px 0;
+      border-top: 1px solid var(--border-outer);
+    }
+
+    @media (max-width: 768px) {
+      .hero-strip {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .hero-gauge-card {
+        width: 100%;
+      }
+      .steps-3-grid {
+        grid-template-columns: 1fr;
+      }
+      .sandbox-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .slider-box {
+        grid-column: 1 / -1;
+      }
+      .compare-container {
+        grid-template-columns: 1fr;
+      }
+      .compare-vs {
+        margin: 4px auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Navigation -->
+    <header class="top-nav">
+      <div class="brand">
+        <div class="brand-glyph">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <div>
+          <span class="brand-title">Perplexity<strong>Studio</strong></span>
+          <span class="brand-sub">Language Model Evaluation Laboratory</span>
+        </div>
+      </div>
+      
+      <div class="nav-pills">
+        <button class="nav-tab active" data-tab="tab-model">Sentence Explorer</button>
+        <button class="nav-tab" data-tab="tab-sandbox">Manual Sandbox</button>
+        <button class="nav-tab" data-tab="tab-compare">Comparison Bench</button>
+      </div>
+
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span>Autoregressive Engine</span>
+      </div>
+    </header>
+
+    <!-- Hero Introduction with Live Score Card -->
+    <section class="hero-strip">
+      <div class="hero-intro">
+        <span class="hero-title-tag">NLP & LLM Metrics</span>
+        <h1 class="hero-headline">Decoding <span>Perplexity</span> in Language Models</h1>
+        <p class="hero-desc">
+          Perplexity measures the branching factor of uncertainty. A lower score reflects higher predictability, fluency, and model confidence.
+        </p>
+      </div>
+
+      <div class="hero-gauge-card" id="heroSummaryMetric">
+        <span class="gauge-label">CURRENT PERPLEXITY SCORE</span>
+        <div class="gauge-val-row">
+          <span class="gauge-number" id="heroPplValue">2.32</span>
+          <span class="pill-tag green" id="heroStatusPill">High Fluency</span>
+        </div>
+        <div class="gauge-subtext" id="heroMetricCaption">
+          Equivalent to rolling an uncertainty die with <strong>2.32 sides</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 1: Sentence Explorer -->
+    <main class="tab-panel active" id="tab-model">
+      <!-- Input Card -->
+      <div class="slate-card">
+        <div class="card-header-flex">
+          <div class="num-badge">01</div>
+          <div class="card-heading">
+            <h3>Type a Sentence to Evaluate</h3>
+            <p>The model reads tokens sequentially and calculates conditional probabilities $P(\text{token} \mid \text{history})$.</p>
+          </div>
+        </div>
+
+        <div class="sentence-control">
+          <input 
+            type="text" 
+            id="sentenceInput" 
+            class="steel-input" 
+            value="I love Python" 
+            placeholder="Type any sentence here..." 
+            aria-label="Sentence to analyze"
+          />
+          <button class="btn-dark" id="analyzeSentenceBtn">
+            <span>Calculate Perplexity</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <div class="bench-strip">
+          <span class="bench-label">Presets:</span>
+          <button class="chip-bench active" data-sentence="I love Python">"I love Python"</button>
+          <button class="chip-bench" data-sentence="Python love I">"Python love I"</button>
+          <button class="chip-bench" data-sentence="The capital of France is Paris">"The capital of France is Paris"</button>
+          <button class="chip-bench" data-sentence="The quick brown fox jumps over the lazy dog">"The quick brown fox..."</button>
+        </div>
+      </div>
+
+      <!-- Visual Distribution Bars -->
+      <div class="slate-card">
+        <div class="card-header-flex between">
+          <div style="display: flex; gap: 14px; align-items: flex-start;">
+            <div class="num-badge">02</div>
+            <div class="card-heading">
+              <h3>Token Probability & Surprise Factor</h3>
+              <p>Green cards indicate expected tokens; amber/rose cards indicate surprising or rare transitions.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Token Bar Cards Container -->
+        <div class="token-grid-cards" id="tokenBarsGrid">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="table-container">
+          <table class="slate-table" id="modelTokenTable">
+            <thead>
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th>Token</th>
+                <th>Probability $P$</th>
+                <th>Surprise Factor $(1/P)$</th>
+                <th>Negative Log $(-\ln P)$</th>
+                <th>Certainty Category</th>
+              </tr>
+            </thead>
+            <tbody id="modelTokenTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Mathematical Derivation -->
+      <div class="slate-card">
+        <div class="card-header-flex between">
+          <div style="display: flex; gap: 14px; align-items: flex-start;">
+            <div class="num-badge">03</div>
+            <div class="card-heading">
+              <h3>Mathematical Computation Steps</h3>
+              <p>Step-by-step reduction from individual token reciprocal probabilities to the scalar perplexity score.</p>
+            </div>
+          </div>
+          <div class="toggle-group">
+            <button class="btn-toggle active" id="btnGeometricFormula">Geometric Product</button>
+            <button class="btn-toggle" id="btnLogFormula">Negative Log-Likelihood</button>
+          </div>
+        </div>
+
+        <!-- Formula Banner -->
+        <div class="formula-black-banner" id="formulaBanner">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div class="steps-3-grid">
+          <div class="step-box">
+            <span class="step-label-tag">STEP 1</span>
+            <div class="step-box-title">Surprise Product</div>
+            <div class="step-code-result" id="step1ProductBox">2 × 1.25 × 5 = 12.5</div>
+            <p class="step-desc">Multiply reciprocal probabilities $(1/P_i)$ across all tokens in the sequence.</p>
+          </div>
+
+          <div class="step-box">
+            <span class="step-label-tag">STEP 2</span>
+            <div class="step-box-title">Token Count Normalization</div>
+            <div class="step-code-result" id="step2LengthBox">N = 3 tokens</div>
+            <p class="step-desc">Count sequence length $N$ to normalize uncertainty per token.</p>
+          </div>
+
+          <div class="step-box primary">
+            <span class="step-label-tag">STEP 3</span>
+            <div class="step-box-title">Geometric Mean (Perplexity)</div>
+            <div class="step-code-result" id="step3ResultBox">(12.5)<sup>1/3</sup> = <span class="ppl-bold">2.321</span></div>
+            <p class="step-desc">Take the $N$-th root to yield the final scalar perplexity.</p>
+          </div>
+        </div>
+
+        <div class="copy-latex-row">
+          <button class="btn-slate-outline" id="copyLatexBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy Calculation as LaTeX</span>
+          </button>
+          <span class="feedback-text" id="copyFeedback"></span>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 2: Manual Interactive Sandbox -->
+    <main class="tab-panel" id="tab-sandbox">
+      <div class="slate-card">
+        <div class="card-header-flex between">
+          <div style="display: flex; gap: 14px; align-items: flex-start;">
+            <div class="num-badge">04</div>
+            <div class="card-heading">
+              <h3>Manual Probability Sandbox <span class="pill-tag amber" style="margin-left: 8px;">Simulated</span></h3>
+              <p>Type your own probabilities or drag the sliders to watch the formula and perplexity update live.</p>
+            </div>
+          </div>
+          <div class="bench-strip">
+            <button class="chip-bench active" id="sandboxPresetPython">I love Python (0.5, 0.8, 0.2)</button>
+            <button class="chip-bench" id="sandboxPresetEighth">All 1/8 (Perplexity = 8.0)</button>
+            <button class="chip-bench" id="sandboxPresetShock">One Shock Word (0.9, 0.001, 0.9)</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Token Sliders and Inputs -->
+        <div style="display: flex; flex-direction: column; gap: 10px;" id="sandboxRowsList">
+          <!-- Dynamically populated with slider + input controls -->
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <button class="btn-slate-outline" id="addSandboxTokenBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Add New Token</span>
+          </button>
+          <span style="font-size: 0.82rem; color: var(--text-sub); font-style: italic;">
+            Try setting every token to $P = 0.125$ ($1/8$); perplexity is exactly 8.0!
+          </span>
+        </div>
+
+        <!-- Realtime Live Calculation Dashboard -->
+        <div class="dash-metrics-grid">
+          <div class="dash-metric-box">
+            <div class="dm-title">TOKEN COUNT (N)</div>
+            <div class="dm-val" id="sandboxCountVal">3</div>
+          </div>
+          <div class="dash-metric-box">
+            <div class="dm-title">SURPRISE PRODUCT (1/P)</div>
+            <div class="dm-val" id="sandboxProductVal">12.50</div>
+          </div>
+          <div class="dash-metric-box active">
+            <div class="dm-title">COMPUTED PERPLEXITY</div>
+            <div class="dm-val blue" id="sandboxFinalPpl">2.321</div>
+          </div>
+        </div>
+
+        <!-- Live Step Breakdown -->
+        <div class="calc-blue-card">
+          <div class="calc-line" id="sbStep1Text"><strong>Step 1:</strong> Multiply all 1/P values: 2 × 1.25 × 5 = 12.5</div>
+          <div class="calc-line" id="sbStep2Text"><strong>Step 2:</strong> Count the tokens: N = 3</div>
+          <div class="calc-line" id="sbStep3Text"><strong>Step 3:</strong> Take the N-th root: (12.5)<sup>1/3</sup> = <strong style="font-size: 1.15rem; font-family: var(--font-mono); color: var(--accent-blue);">2.321</strong></div>
+          <div class="calc-verdict" id="sbVerdictText">
+            Perplexity ≈ 2.321: on average the model was as unsure as choosing between about 2.321 equally likely tokens.
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 3: Comparison Bench -->
+    <main class="tab-panel" id="tab-compare">
+      <div class="slate-card">
+        <div class="card-header-flex">
+          <div class="num-badge">05</div>
+          <div class="card-heading">
+            <h3>Linguistic Comparison Bench</h3>
+            <p>Compare natural syntax vs scrambled order. Fluent transitions yield low perplexity; scrambled syntax causes perplexity to explode.</p>
+          </div>
+        </div>
+
+        <div class="compare-container">
+          <div class="compare-box">
+            <label class="compare-label">Sentence A (Natural Syntax)</label>
+            <input type="text" id="compareInputA" class="steel-input" value="The cat sat on the mat" />
+            <div class="compare-score-row">
+              <span class="comp-score" id="comparePplA">PPL: 2.15</span>
+              <span class="pill-tag green">High Fluency</span>
+            </div>
+          </div>
+
+          <div class="compare-vs">VS</div>
+
+          <div class="compare-box">
+            <label class="compare-label">Sentence B (Scrambled Syntax)</label>
+            <input type="text" id="compareInputB" class="steel-input" value="Mat the on sat cat the" />
+            <div class="compare-score-row">
+              <span class="comp-score" id="comparePplB">PPL: 68.40</span>
+              <span class="pill-tag rose">High Surprise</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="takeaway-card">
+          <h4>Why Perplexity is the Golden Benchmark in LLMs</h4>
+          <p>
+            When training frontier models (like GPT-4, LLaMA, or Gemini), training loss directly optimizes cross-entropy, which exponentiates into perplexity. A model with lower perplexity has captured the syntactic and semantic structure of human language with higher statistical precision.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div>PerplexityStudio • Interactive NLP Language Model Laboratory</div>
+      <div>Visible Slate & Grey Theme • Class Assignment</div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
